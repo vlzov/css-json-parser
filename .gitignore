@@ -1,0 +1,52 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Build output
+target/
+build/
+bin/
+out/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/tmp
+
+# Gradle
+.gradle/
+/build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Generated output files from your program
+data.json
+!src/main/resources/data.json  # Keep the one in resources
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

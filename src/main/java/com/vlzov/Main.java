@@ -1,20 +1,5 @@
 package com.vlzov;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.opencsv.CSVReader;
-import com.opencsv.bean.ColumnPositionMappingStrategy;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,18 +7,52 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.opencsv.CSVReader;
+import com.opencsv.bean.ColumnPositionMappingStrategy;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.vlzov.Entity.Employee;
+
 public class Main {
     public static void main(String[] args) {
+
+        /*
+            Block which parse CSV ---> JSON
+        */
         
         String[] columnMapping = {"id", "firstName", "lastName", "country", "age"};
 
-        String fileName = "/Users/vladimir/Documents/csv-json-parser/src/main/resources/data.csv";
+        String csvFileName = "/Users/vladimir/Documents/csv-json-parser/src/main/resources/data.csv";
 
-        List<Employee> list = parseCSV(columnMapping, fileName);
+        List<Employee> csvList = parseCSV(columnMapping, csvFileName);
 
-        String json = listToJson(list);
+        String json1 = listToJson(csvList);
         
-        writeString(json, "/Users/vladimir/Documents/csv-json-parser/src/main/resources/data.json");
+        writeString(json1, "/Users/vladimir/Documents/csv-json-parser/src/main/resources/data1.json");
+
+        
+        /*
+            Block which parse XML ---> JSON
+        */
+
+        String xmlFileName = "/Users/vladimir/Documents/csv-json-parser/src/main/resources/data.xml";
+        
+        List<Employee> xmlList = parseXML(xmlFileName);
+
+        String json2 = listToJson(xmlList);
+
+        writeString(json2, "/Users/vladimir/Documents/csv-json-parser/src/main/resources/data2.json");
         
     }
 
@@ -55,7 +74,7 @@ public class Main {
 
         } catch (IOException e) {
             
-            System.out.println("Ошибка чтения CSV файла: " + e.getMessage());
+            System.out.println("Ошибка парсинга CSV файла: " + e.getMessage());
             return List.of();
         }
 
@@ -70,6 +89,65 @@ public class Main {
         Type listType = new TypeToken<List<Employee>>() {}.getType();
 
         return gson.toJson(list, listType);
+
+    }
+
+    public static List<Employee> parseXML(String fileName) {
+
+        List<Employee> employees = new ArrayList<>();
+
+        try {
+            
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            Document document = builder.parse(fileName);
+
+            Element root = document.getDocumentElement();
+
+            NodeList nodeList = root.getElementsByTagName("employee");
+
+            for(int i = 0; i < nodeList.getLength(); i++) {
+
+                Element employeeElement = (Element) nodeList.item(i);
+
+                long id = Long.parseLong(getTagValue("id", employeeElement));
+                String firstName = getTagValue("firstName", employeeElement);
+                String lastName = getTagValue("lastName", employeeElement);
+                String country = getTagValue("country", employeeElement);
+                int age = Integer.parseInt(getTagValue("age", employeeElement));      
+                
+                Employee employee = new Employee(id, firstName, lastName, country, age);
+                employees.add(employee);
+
+            }
+
+        } catch (Exception e) {
+            System.out.println("Ошибка парсинга XML файла: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return employees;
+
+    }
+
+    private static String getTagValue(String tagName, Element element) {
+
+        NodeList nodeList = element.getElementsByTagName(tagName);
+
+        if(nodeList.getLength() > 0) {
+
+            Node node = nodeList.item(0);
+
+            if(node != null) {
+
+                return node.getTextContent();
+
+            }
+
+        }
+
+        return "";
 
     }
 
